@@ -7,7 +7,7 @@ use Northwind_data
 create procedure q1 (@num int)
 as
 begin
-select top(@num) a.CategoryName, count(c.UnitPrice) 'Count'
+select top(@num) a.CategoryName, count(b.UnitPrice) 'Count'
 from Categories a
 left join products b
 on a.CategoryID = b.CategoryID
@@ -23,7 +23,26 @@ exec q1 @num = 3
 -- The report should display the Category name, country, year, month & count of sales done per category per country, per month per year.
 
 
+select g.CategoryName, g.Country, g.Year, g.Month, g.Count from
+(
+select a.CategoryName, e.Country, YEAR(d.OrderDate) 'Year', MONTH(d.OrderDate) 'Month', count(c.UnitPrice) 'Count',
+dense_rank() over (partition by a.CategoryName order by e.Country ASC) 'DenseRank'
+from Categories a
+left join products b
+on a.CategoryID = b.CategoryID
+left join order_details c
+on b.ProductID = c.ProductID
+left join orders d
+on c.OrderID = d.OrderID
+left join Customers e
+on d.CustomerID = e.CustomerID
+group by a.CategoryName, e.Country, d.OrderDate) g
+where DenseRank = 3
+
+
 
 select * from order_details
 select * from Categories
 select * from products
+select * from Customers
+select * from orders
