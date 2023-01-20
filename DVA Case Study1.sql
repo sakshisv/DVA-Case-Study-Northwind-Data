@@ -23,10 +23,10 @@ exec q1 @num = 3
 -- The report should display the Category name, country, year, month & count of sales done per category per country, per month per year.
 
 
-select g.CategoryName, g.Country, g.Year, g.Month, g.Count from
-(
+--select g.CategoryName, g.Country, g.Year, g.Month, g.Count from
+--(
 select a.CategoryName, e.Country, YEAR(d.OrderDate) 'Year', MONTH(d.OrderDate) 'Month', count(c.UnitPrice) 'Count',
-dense_rank() over (partition by a.CategoryName order by e.Country ASC) 'DenseRank'
+ROW_NUMBER() over (partition by a.CategoryName order by e.Country ASC) 'Rank'
 from Categories a
 left join products b
 on a.CategoryID = b.CategoryID
@@ -36,8 +36,8 @@ left join orders d
 on c.OrderID = d.OrderID
 left join Customers e
 on d.CustomerID = e.CustomerID
-group by a.CategoryName, e.Country, d.OrderDate) g
-where DenseRank = 3
+group by a.CategoryName, e.Country, d.OrderDate
+--where Rank = 3
 
 
 
