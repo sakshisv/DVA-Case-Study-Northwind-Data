@@ -86,8 +86,38 @@ select concat(ContactName, ' ', 'can be reached at', ' ', 'x', Phone) ContactInf
 from Customers
 order by ContactName
 
-select RIGHT(Phone, CHARINDEX('.', (REVERSE(Phone)))-1) from Customers
+select RIGHT(Phone, CHARINDEX('-', (REVERSE(Phone)))-1) from Customers
 where Phone = '030-0074321'
+
+-- Q6. What are the Top 3 products purchased by customers in each country?
+
+select g.ProductName, g.Country, g.Product_Count from
+(select a.ProductName, d.Country, count(a.ProductName) Product_Count,
+dense_rank() over (partition by (d.Country) order by (a.ProductName) desc) Rank
+from products a
+left join order_details b
+on a.ProductID = b.ProductID
+left join orders c
+on b.OrderID = c.OrderID
+left join Customers d
+on c.CustomerID = d.CustomerID
+group by a.ProductName, d.Country) g
+where Rank <= 3
+
+
+select g.ProductName, g.Country, g.Price from
+(select a.ProductName, d.Country, sum(b.UnitPrice) Price,
+dense_rank() over (partition by (d.Country) order by (b.UnitPrice) desc) Rank
+from products a
+left join order_details b
+on a.ProductID = b.ProductID
+left join orders c
+on b.OrderID = c.OrderID
+left join Customers d
+on c.CustomerID = d.CustomerID
+group by a.ProductName, d.Country, b.UnitPrice) g
+where Rank <= 3
+
 
 select * from order_details
 select * from Categories
