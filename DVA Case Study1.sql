@@ -22,11 +22,10 @@ exec q1 @num = 3
 -- (hint: get month and year with “month” and “year” functions).  
 -- The report should display the Category name, country, year, month & count of sales done per category per country, per month per year.
 
-
---select g.CategoryName, g.Country, g.Year, g.Month, g.Count from
---(
-select a.CategoryName, e.Country, YEAR(d.OrderDate) 'Year', MONTH(d.OrderDate) 'Month', count(c.UnitPrice) 'Count',
-ROW_NUMBER() over (partition by a.CategoryName order by e.Country ASC) 'Rank'
+select * from (SELECT a.CategoryID,  
+         MAX(a.CategoryName) category, 
+         SUM(c.UnitPrice) sales,
+         ROW_NUMBER() OVER (PARTITION BY MAX(a.CategoryName) ORDER BY SUM(c.UnitPrice) DESC) rn
 from Categories a
 left join products b
 on a.CategoryID = b.CategoryID
@@ -36,8 +35,26 @@ left join orders d
 on c.OrderID = d.OrderID
 left join Customers e
 on d.CustomerID = e.CustomerID
-group by a.CategoryName, e.Country, d.OrderDate
---where Rank = 3
+group by a.CategoryID, a.CategoryName, e.Country, d.OrderDate, c.UnitPrice) g
+where rn <=3
+order by CategoryID
+
+select g.CategoryName, g.Country, g.Year, g.Month, g.Count from
+(select a.CategoryName, e.Country, YEAR(d.OrderDate) Year, MONTH(d.OrderDate) Month, COUNT(c.UnitPrice) Count,
+ROW_NUMBER() OVER (PARTITION BY (a.CategoryName) ORDER BY SUM(c.UnitPrice) DESC) rn
+from Categories a
+left join products b
+on a.CategoryID = b.CategoryID
+left join order_details c
+on b.ProductID = c.ProductID
+left join orders d
+on c.OrderID = d.OrderID
+left join Customers e
+on d.CustomerID = e.CustomerID
+group by a.CategoryID, a.CategoryName, e.Country, d.OrderDate, c.UnitPrice) g
+where rn <=3
+
+-- Q3. Display the ‘N’ Most Expensive Products from the available products along with the Unit Price of each Product.
 
 
 
