@@ -22,23 +22,6 @@ exec q1 @num = 3
 --     (hint: get month and year with “month” and “year” functions).  
 --     The report should display the Category name, country, year, month & count of sales done per category per country, per month per year.
 
-select * from (SELECT a.CategoryID,  
-         MAX(a.CategoryName) category, 
-         SUM(c.UnitPrice) sales,
-         ROW_NUMBER() OVER (PARTITION BY MAX(a.CategoryName) ORDER BY SUM(c.UnitPrice) DESC) rn
-from Categories a
-left join products b
-on a.CategoryID = b.CategoryID
-left join order_details c
-on b.ProductID = c.ProductID
-left join orders d
-on c.OrderID = d.OrderID
-left join Customers e
-on d.CustomerID = e.CustomerID
-group by a.CategoryID, a.CategoryName, e.Country, d.OrderDate, c.UnitPrice) g
-where rn <=3
-order by CategoryID
-
 select g.CategoryName, g.Country, g.Year, g.Month, g.Count from
 (select a.CategoryName, e.Country, YEAR(d.OrderDate) Year, MONTH(d.OrderDate) Month, COUNT(c.UnitPrice) Count,
 ROW_NUMBER() OVER (PARTITION BY (a.CategoryName) ORDER BY SUM(c.UnitPrice) DESC) rn
@@ -84,16 +67,16 @@ where Country in ('Mexico', 'Spain') and City != 'Barcelona'
 
 select concat(ContactName, ' ', 'can be reached at', ' ', 'x', Phone) ContactInfo
 from Customers
-order by ContactName
+--order by ContactName
 
-select RIGHT(Phone, CHARINDEX('-', (REVERSE(Phone)))-1) from Customers
-where Phone = '030-0074321'
+--select RIGHT(Phone, CHARINDEX('-', (REVERSE(Phone)))-1) from Customers
+--where Phone = '030-0074321'
 
 -- Q6. What are the Top 3 products purchased by customers in each country?
 
 select g.ProductName, g.Country, g.Product_Count from
 (select a.ProductName, d.Country, count(a.ProductName) Product_Count,
-dense_rank() over (partition by (d.Country) order by (a.ProductName) desc) Rank
+dense_rank() over (partition by (d.Country) order by count(a.ProductName) desc ) Rank
 from products a
 left join order_details b
 on a.ProductID = b.ProductID
@@ -103,24 +86,3 @@ left join Customers d
 on c.CustomerID = d.CustomerID
 group by a.ProductName, d.Country) g
 where Rank <= 3
-
-
-select g.ProductName, g.Country, g.Price from
-(select a.ProductName, d.Country, sum(b.UnitPrice) Price,
-dense_rank() over (partition by (d.Country) order by (b.UnitPrice) desc) Rank
-from products a
-left join order_details b
-on a.ProductID = b.ProductID
-left join orders c
-on b.OrderID = c.OrderID
-left join Customers d
-on c.CustomerID = d.CustomerID
-group by a.ProductName, d.Country, b.UnitPrice) g
-where Rank <= 3
-
-
-select * from order_details
-select * from Categories
-select * from products
-select * from Customers
-select * from orders
