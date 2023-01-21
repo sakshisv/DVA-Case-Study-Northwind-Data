@@ -79,8 +79,15 @@ from Customers
 where Country in ('Mexico', 'Spain') and City != 'Barcelona'
 
 -- Q5. Create a SQL statement that gives the following output. (hint: you may use text functions)
+--     Contactinfo
+--     Nancy Davolio can be reached at x5467
 
+select concat(ContactName, ' ', 'can be reached at', ' ', 'x', Phone) ContactInfo
+from Customers
+order by ContactName
 
+select RIGHT(Phone, CHARINDEX('.', (REVERSE(Phone)))-1) from Customers
+where Phone = '030-0074321'
 
 select * from order_details
 select * from Categories
