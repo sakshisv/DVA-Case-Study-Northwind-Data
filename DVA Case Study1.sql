@@ -19,8 +19,8 @@ end
 exec q1 @num = 3
 
 -- Q2. Write a query that produces a report of sales by month for all the top 3 categories.
--- (hint: get month and year with “month” and “year” functions).  
--- The report should display the Category name, country, year, month & count of sales done per category per country, per month per year.
+--     (hint: get month and year with “month” and “year” functions).  
+--     The report should display the Category name, country, year, month & count of sales done per category per country, per month per year.
 
 select * from (SELECT a.CategoryID,  
          MAX(a.CategoryName) category, 
@@ -55,6 +55,30 @@ group by a.CategoryID, a.CategoryName, e.Country, d.OrderDate, c.UnitPrice) g
 where rn <=3
 
 -- Q3. Display the ‘N’ Most Expensive Products from the available products along with the Unit Price of each Product.
+
+create procedure q3 (@num int)
+as
+begin
+select top(@num) ProductName, UnitPrice
+from products
+order by UnitPrice desc
+end
+
+exec q3 @num = 10
+exec q3 @num = 4
+
+-- Q4. Write a query that shows the Company Name, Contact Title, City, Country of all customers in any city in Mexico or other cities
+--     in Spain other than the city of Madrid & Barcelona: 
+
+select CompanyName, ContactTitle, City, Country
+from Customers
+where Country in ('Mexico', 'Spain') and City not in ('Madrid')
+
+select CompanyName, ContactTitle, City, Country
+from Customers
+where Country in ('Mexico', 'Spain') and City != 'Barcelona'
+
+-- Q5. Create a SQL statement that gives the following output. (hint: you may use text functions)
 
 
 
